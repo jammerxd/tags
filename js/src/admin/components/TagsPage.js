@@ -1,4 +1,4 @@
-import sortable from 'sortablejs';
+import sortable from 'html5sortable/dist/html5sortable.es.js';
 
 import Page from 'flarum/components/Page';
 import Button from 'flarum/components/Button';
@@ -17,11 +17,11 @@ function tagItem(tag) {
         {Button.component({
           className: 'Button Button--link',
           icon: 'fas fa-pencil-alt',
-          onclick: () => app.modal.show(EditTagModal, {tag})
+          onclick: () => app.modal.show(new EditTagModal({tag}))
         })}
       </div>
       {!tag.isChild() && tag.position() !== null ? (
-        <ol className="TagListItem-children TagList">
+        <ol className="TagListItem-children">
           {sortTags(app.store.all('tags'))
             .filter(child => child.parent() === tag)
             .map(tagItem)}
@@ -44,12 +44,12 @@ export default class TagsPage extends Page {
               className: 'Button Button--primary',
               icon: 'fas fa-plus',
               children: app.translator.trans('flarum-tags.admin.tags.create_tag_button'),
-              onclick: () => app.modal.show(EditTagModal)
+              onclick: () => app.modal.show(new EditTagModal())
             })}
             {Button.component({
               className: 'Button',
               children: app.translator.trans('flarum-tags.admin.tags.settings_button'),
-              onclick: () => app.modal.show(TagSettingsModal)
+              onclick: () => app.modal.show(new TagSettingsModal())
             })}
           </div>
         </div>
@@ -80,24 +80,18 @@ export default class TagsPage extends Page {
   }
 
   config() {
-      this.$('.TagList').get().map(e => {
-          sortable.create(e, {
-              group: 'tags',
-              animation: 150,
-              swapThreshold: 0.65,
-	            dragClass: 'sortable-dragging',
-              ghostClass: 'sortable-placeholder',
-              onSort: (e) => this.onSortUpdate(e)
-          })
-      });
+    sortable(this.$('ol, ul'), {
+      acceptFrom: 'ol,ul'
+    }).forEach(this.onSortUpdate.bind(this));
   }
 
-  onSortUpdate(e) {
+  onSortUpdate(el) {
+    el.addEventListener('sortupdate', (e) => {
       // If we've moved a tag from 'primary' to 'secondary', then we'll update
       // its attributes in our local store so that when we redraw the change
       // will be made.
-      if (e.from instanceof HTMLOListElement && e.to instanceof HTMLUListElement) {
-        app.store.getById('tags', e.item.getAttribute('data-id')).pushData({
+      if (e.detail.origin.container instanceof HTMLOListElement && e.detail.destination.container instanceof HTMLUListElement) {
+        app.store.getById('tags', e.detail.item.getAttribute('data-id')).pushData({
           attributes: {
             position: null,
             isChild: false
@@ -154,5 +148,6 @@ export default class TagsPage extends Page {
       // we force a full reconstruction of the DOM.
       m.redraw.strategy('all');
       m.redraw();
+    });
   }
 }

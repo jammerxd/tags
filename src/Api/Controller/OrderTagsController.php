@@ -10,7 +10,7 @@
 namespace Flarum\Tags\Api\Controller;
 
 use Flarum\Tags\Tag;
-use Illuminate\Support\Arr;
+use Flarum\User\AssertPermissionTrait;
 use Laminas\Diactoros\Response\EmptyResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -18,14 +18,16 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class OrderTagsController implements RequestHandlerInterface
 {
+    use AssertPermissionTrait;
+
     /**
      * {@inheritdoc}
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $request->getAttribute('actor')->assertAdmin();
+        $this->assertAdmin($request->getAttribute('actor'));
 
-        $order = Arr::get($request->getParsedBody(), 'order');
+        $order = array_get($request->getParsedBody(), 'order');
 
         if ($order === null) {
             return new EmptyResponse(422);
@@ -37,7 +39,7 @@ class OrderTagsController implements RequestHandlerInterface
         ]);
 
         foreach ($order as $i => $parent) {
-            $parentId = Arr::get($parent, 'id');
+            $parentId = array_get($parent, 'id');
 
             Tag::where('id', $parentId)->update(['position' => $i]);
 

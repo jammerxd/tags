@@ -70,8 +70,21 @@ class SaveTagsToDatabase
             $primaryCount = 0;
             $secondaryCount = 0;
 
+            $onlyParents = true;
+            foreach($newTags as $tag)
+            {
+                if(!$onlyParents && $tag->parent_id !== null)
+                {
+                    $onlyParents = false;
+                    break;
+                }
+            }
             foreach ($newTags as $tag) {
-                if ($actor->cannot('startDiscussion', $tag)) {
+                if($actor->cannot('startDiscussion') && $tag->position !== null && $tag->parent_id !== null)
+                    throw new PermissionDeniedException;
+                
+                
+                if ($actor->cannot('startDiscussion', $tag) && $onlyParents) {
                     throw new PermissionDeniedException;
                 }
 
@@ -81,7 +94,6 @@ class SaveTagsToDatabase
                     $secondaryCount++;
                 }
             }
-
             $this->validateTagCount('primary', $primaryCount);
             $this->validateTagCount('secondary', $secondaryCount);
 

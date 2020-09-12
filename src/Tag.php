@@ -110,20 +110,18 @@ class Tag extends AbstractModel
 
     public function refreshLastPostedDiscussion()
     {
-        if ($lastPostedDiscussion = $this->discussions()->where('is_private', false)->whereNull('hidden_at')->latest('last_posted_at')->first()) {
+        if ($lastPostedDiscussion = $this->discussions()->latest('last_posted_at')->first()) {
             $this->setLastPostedDiscussion($lastPostedDiscussion);
-        } else {
-            $this->setLastPostedDiscussion(null);
         }
 
         return $this;
     }
 
-    public function setLastPostedDiscussion(Discussion $discussion = null)
+    public function setLastPostedDiscussion(Discussion $discussion)
     {
-        $this->last_posted_at = optional($discussion)->last_posted_at;
-        $this->last_posted_discussion_id = optional($discussion)->id;
-        $this->last_posted_user_id = optional($discussion)->last_posted_user_id;
+        $this->last_posted_at = $discussion->last_posted_at;
+        $this->last_posted_discussion_id = $discussion->id;
+        $this->last_posted_user_id = $discussion->last_posted_user_id;
 
         return $this;
     }

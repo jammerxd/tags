@@ -12,7 +12,6 @@ namespace Flarum\Tags\Gambit;
 use Flarum\Search\AbstractRegexGambit;
 use Flarum\Search\AbstractSearch;
 use Flarum\Tags\TagRepository;
-use Illuminate\Database\Query\Builder;
 
 class TagGambit extends AbstractRegexGambit
 {
@@ -41,21 +40,21 @@ class TagGambit extends AbstractRegexGambit
     {
         $slugs = explode(',', trim($matches[1], '"'));
 
-        $search->getQuery()->where(function (Builder $query) use ($slugs, $negate) {
+        $search->getQuery()->where(function ($query) use ($slugs, $negate) {
             foreach ($slugs as $slug) {
                 if ($slug === 'untagged') {
-                    $query->whereIn('discussions.id', function (Builder $query) {
+                    $query->orWhereIn('discussions.id', function ($query) {
                         $query->select('discussion_id')
                             ->from('discussion_tag');
-                    }, 'or', ! $negate);
+                    }, ! $negate);
                 } else {
                     $id = $this->tags->getIdForSlug($slug);
 
-                    $query->whereIn('discussions.id', function (Builder $query) use ($id) {
+                    $query->orWhereIn('discussions.id', function ($query) use ($id) {
                         $query->select('discussion_id')
                             ->from('discussion_tag')
                             ->where('tag_id', $id);
-                    }, 'or', $negate);
+                    }, $negate);
                 }
             }
         });
