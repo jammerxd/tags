@@ -1,12 +1,12 @@
 {
-    "name": "flarum/tags",
+    "name": "jammerxd/tags",
     "description": "Organize discussions into a hierarchy of tags and categories.",
     "type": "flarum-extension",
     "keywords": ["discussion"],
     "license": "MIT",
     "support": {
         "issues": "https://github.com/flarum/core/issues",
-        "source": "https://github.com/flarum/tags"
+        "source": "https://github.com/jammerxd/tags"
     },
     "require": {
         "flarum/core": "^0.1.0-beta.13"
