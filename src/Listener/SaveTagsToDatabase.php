@@ -73,7 +73,7 @@ class SaveTagsToDatabase
             $onlyParents = true;
             foreach($newTags as $tag)
             {
-                if(!$onlyParents && $tag->parent_id !== null)
+                if($onlyParents && $tag->parent_id !== null)
                 {
                     $onlyParents = false;
                     break;
